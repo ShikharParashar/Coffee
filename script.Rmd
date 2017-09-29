@@ -1,0 +1,384 @@
+---
+title: "Coffee over Statistical Methods for Decision Making"
+author: "~Shikhar Parashar"
+date: "September 27, 2017"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#setwd('S:\\Great Lakes\\Statistical Methods for Decision Making')
+packages <- c('RColorBrewer','ggplot2','plot3D')
+purrr::walk(packages, library, character.only = TRUE, warn.conflicts = FALSE)
+
+```
+
+<b>MENTOR: <u>Dr. Bappaditya Mukhopadhyay</u>
+
+PGP - BA-BI </b><br>
+<u>Great Lakes Institute Of Management (Class of '17-'18)</u>
+
+Reading the dataset into R and checking the dimensions of the dataset
+
+```{r echo=FALSE}
+coffee <- read.csv('Coffee.csv')
+dim(coffee)
+
+paste0('Coffee dataset provides ', nrow(coffee),' records with ', ncol(coffee),' columns.')
+
+#Following Command can also be used for same result.
+#paste0('Coffee dataset provides ', dim(coffee)[1],' records with ', dim(coffee)[2],' columns.')
+```
+
+Identifing Variables of the coffee dataset and updating behaviour / nature of variables as per the Desc.doc
+
+
+```{r echo = FALSE}
+
+coffee$ï..No_of_Packet <- as.factor(coffee$ï..No_of_Packet)
+coffee$IDNo <- as.factor(coffee$IDNo)
+coffee$Price_per_Packet <- as.factor(coffee$Price_per_Packet)
+coffee$Brand <- as.factor(coffee$Brand)
+coffee$Age <- as.factor(coffee$Age)
+coffee$SEC <- as.factor(coffee$SEC)
+coffee$Income <- as.factor(coffee$Income)
+coffee$Household_Sz <- as.factor(coffee$Household_Sz)
+coffee$Price_Conscious <- as.factor(coffee$Price_Conscious)
+coffee$Education <- as.factor(coffee$Education)
+coffee$Loyalty <- as.factor(coffee$Loyalty)
+
+
+str(coffee)
+
+```
+
+###Exploratory Data Analysis
+
+Now we further explore the nature of each individual variable in detail.
+```{r echo=FALSE}
+summary(coffee)
+```
+
+###No_of_Packet
+
+```{r echo=FALSE}
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$ï..No_of_Packet), col = terrain.colors(3),main='No of Packets sold together', axes=FALSE, ylim=c(0,120000))
+text(x = xx, y = table(coffee$ï..No_of_Packet), label = table(coffee$ï..No_of_Packet), pos = 3, cex = 0.5, col = "black")
+
+piepercent<- round(100*table(coffee$ï..No_of_Packet)/sum(table(coffee$ï..No_of_Packet))) 
+
+pie(table(coffee$ï..No_of_Packet), labels = piepercent, main = "%age distribution",col = terrain.colors(length(table(coffee$ï..No_of_Packet))))
+   fill = terrain.colors(length(table(coffee$ï..No_of_Packet)))
+legend("bottomright", c('1 : one packet','2 : two packets','3 : three or more packets'), cex = 0.5,
+   fill = terrain.colors(length(table(coffee$ï..No_of_Packet))))
+   
+
+
+```
+
+<b>Conclusion: </b><i>As one can see, the Sales of Individual Packets outclass the sales of 2 and 3+ packs at a time by <u>80%.</u></i>
+
+###Price_per_Packet
+
+```{r echo=FALSE}
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Price_per_Packet), col = topo.colors(3),main='Selling Price per packet', axes=FALSE, ylim=c(0,120000))
+text(x = xx, y = table(coffee$Price_per_Packet), label = table(coffee$Price_per_Packet), pos = 3, cex = 0.8, col = "black")
+
+piepercent<- round(100*table(coffee$Price_per_Packet)/sum(table(coffee$Price_per_Packet))) 
+
+pie(table(coffee$Price_per_Packet), labels = piepercent, main = "%age distribution",col = topo.colors(length(table(coffee$Price_per_Packet))))
+legend("bottomright", c("less than 6,50 DM","6,50 DM to 8,50 DM","6,50 DM to 8,50 DM"), cex = 0.5,
+   fill = topo.colors(length(table(coffee$Price_per_Packet))))
+
+
+```
+
+<b>Conclusion: </b><i>We can see that 51% of all coffee packets are priced between <u>6,50 DM to 8,50 DM</u> and hence is the dominating price category amongst the 3</i>
+
+
+###IDNo
+Top 6 Houses with <b><u>least number</b></u> of Packets Purchased
+```{r echo=FALSE}
+#
+head(sort(rowSums(table(coffee$IDNo,coffee$ï..No_of_Packet))))
+```
+Top 6 Houses with <b><u>most number</b></u> of Packets Purchased
+```{r echo=FALSE}
+#
+tail(sort(rowSums(table(coffee$IDNo,coffee$ï..No_of_Packet))))
+
+
+```
+
+<b>Conclusion: </b><i>We can see that <b>House ID: 560</b> is the largest purchaser of Coffee Packets whereas <b>House ID: 663, 1665, 1680, 2005, 4081 and 5773 </b> have purchased only 1 packet of Coffee
+
+
+###Brand
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Brand), col = rainbow(9),main='Solo Brand', axes=FALSE, ylim=c(0,38000))
+text(x = xx, y = table(coffee$Brand), label = table(coffee$Brand), pos = 3, cex = 0.5, col = "black")
+legend("topleft", c('1 : Jacobs Krönung','2 : Jacobs other','3 : Aldi','4 : Aldi other','5 : Eduscho Gala','6 : Eduscho other','7 : Tchibo Feine Milde','8 : Tchibo other','9 : Andere Kaffeemarken'), cex = 0.5,
+   fill = rainbow(nlevels(coffee$Brand)))
+piepercent<- paste0(round(100*table(coffee$Brand)/sum(table(coffee$Brand))),'%')
+
+
+pie(table(coffee$Brand), labels = piepercent, main = "%age distribution",col = rainbow(nlevels(coffee$Brand)))
+
+
+```
+
+
+<b>Conclusion: </b><i>When restricting ourselves to all individual Brands from different competetiors, we notice that the Brand : <b><u>Andere Kaffeemarken</u></b> has about <b>27%</b> market share</i>
+
+
+
+###Company
+
+```{r echo=FALSE}
+Brand = {}
+Jacob <- table(coffee$Brand)[1] + table(coffee$Brand)[2]
+Aldi <- table(coffee$Brand)[3] + table(coffee$Brand)[4]
+Eduscho <- table(coffee$Brand)[5] + table(coffee$Brand)[6]
+Tchibo <- table(coffee$Brand)[7] + table(coffee$Brand)[8]
+Andere <- table(coffee$Brand)[9]
+Brand <- cbind(Jacob,Aldi,Eduscho,Tchibo,Andere)
+
+
+
+
+#par(mfrow = c(1,2))
+xx = barplot(Brand, col='brown3',main='Company Sales', axes=FALSE, ylim=c(0,38000))
+text(x = xx, y = Brand, label = Brand, pos = 3, cex = 0.5, col = "black")
+piepercent<- paste0(round(100*Brand/sum(Brand)),'%')
+
+
+pie(table(Brand), labels = piepercent, main = "%age distribution",col = cm.colors(nlevels(coffee$Age)))
+legend("bottomright", c('1 : Jacobs','2 : Aldi','3 : Eduscho','4 : Tchibo','5 : Andere'), cex = 0.5,
+   fill = cm.colors(nlevels(coffee$Age)))
+
+```
+
+
+<b>Conclusion: </b><i>When looking for the Market Share for each company, it is evident that <b><u>Andere</u></b> leads the race with <b>27%</b> market share, followed by <b><u>Tchibo, Jacobs, Aldi and Eduscho </u></b>respectively.</i>
+
+
+###Days_between_Purchase
+
+```{r echo=FALSE}
+summary(coffee$Days_between_Purchase)
+
+mybox <- boxplot(coffee$Days_between_Purchase)
+
+paste0(round(prop.table(table(coffee$Days_between_Purchase>17|coffee$Days_between_Purchase<6)),4)*100,"%")
+
+```
+
+<b>Conclusion: </b><i>As evident from the summary and the resulting box plot:<br> The number of days after which most households make their next purchase of coffee packets is <b><u>9 days</u></b><br>The average number of days to make the purchase of next coffee packet is <b><u>15.14 days.</u></b><br><b>46%</b> Households buy another coffee packet within <b><u>6 days to 17 days</u></b> of their previous packets purchase</i>
+
+
+###Age wise Customer Distribution
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Age), col = heat.colors(nlevels(coffee$Age)),main='Age wise Customer', axes=FALSE, ylim=c(0,50000))
+text(x = xx, y = table(coffee$Age), label = table(coffee$Age), pos = 3, cex = 0.5, col = "black")
+piepercent<- paste0(round(100*table(coffee$Age)/sum(table(coffee$Age))),'%')
+
+pie(table(coffee$Age), labels = piepercent, main = "%age distribution",col = heat.colors(nlevels(coffee$Age)))
+legend("bottomleft", c('1 : less than 24 years','2 : 25 to 39 years','3 : 40 to 49 years','4 : 50 to 59 years','5 : 60 years or more'), cex = 0.5,
+   fill = heat.colors(nlevels(coffee$Age)))
+
+
+```
+
+
+<b>Conclusion: </b><i>From the above, its crystal clear that, of all the customers researched, people within the Age Bracket of <b><u>50 to 59 years</u></b> have the highest caffinne intakes whereas people within the age group of <b><u>less than 24 years</u></b> have the least caffinne intake.</i>
+
+
+###Socioeconomic level of householder
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$SEC), col = rainbow(nlevels(coffee$SEC)),main='Socioeconomic Levels', axes=FALSE, ylim=c(0,55000))
+text(x = xx, y = table(coffee$SEC), label = table(coffee$SEC), pos = 3, cex = 0.5, col = "black")
+
+piepercent<- paste0(round(100*table(coffee$SEC)/sum(table(coffee$SEC))),'%')
+
+pie(table(coffee$SEC), labels = piepercent, main = "%age distribution",col = rainbow(nlevels(coffee$SEC)))
+legend("bottomleft", c('1 : upper class','2 : upper middle class','3 : middle class','4 : lower middle class','5 : lower class'), cex = 0.5,
+   fill = rainbow(nlevels(coffee$SEC)))
+
+```
+
+<b>Conclusion: </b><i><b><u>Middle Class</u></b> is the Socio Economic class most likely to buy coffee whereas the <b><u>Lower Class</u></b> is the least likely of all the Socio Economic Classes to buy a packet of Coffee.</i>
+
+
+###Monthly Household Income
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Income), col = brewer.pal(4,"Set1"),main='Monthly Income', axes=FALSE, ylim=c(0,45000))
+text(x = xx, y = table(coffee$Income), label = table(coffee$Income), pos = 3, cex = 0.5, col = "black")
+
+piepercent<- paste0(round(100*table(coffee$Income)/sum(table(coffee$Income))),'%')
+
+pie(table(coffee$Income), labels = piepercent, main = "%age distribution",col = brewer.pal(4,"Set1"))
+legend("bottomleft", c('1 : less than 1499 DM','2 : 1500 to 2499 DM','3 : 2500 to 3499 DM','4 : 3500 DM or more'), cex = 0.5,
+   fill = brewer.pal(4,"Set1"))
+
+```
+
+<b>Conclusion: </b>Household's earning <i><b><u>3500 DM or more</u></b> happen to be smallest of consumers of Coffee whereas Households earning <b><u>between 2500 DM to 3499 DM</u></b> are the largest consumers of coffee.</i>
+
+###Household Size
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Household_Sz), col = brewer.pal(5,"Set2"),main='Size of Households', axes=FALSE, ylim=c(0,55000))
+text(x = xx, y = table(coffee$Household_Sz), label = table(coffee$Household_Sz), pos = 3, cex = 0.5, col = "black")
+
+piepercent<- paste0(round(100*table(coffee$Household_Sz)/sum(table(coffee$Household_Sz))),'%')
+
+pie(table(coffee$Household_Sz), labels = piepercent, main = "%age distribution",col = brewer.pal(5,"Set2"))
+legend("bottomleft", c('1 : Single','2 : 2 Members','3 : 3 Members','4 : 4 Members', '5: 5 Members'), cex = 0.5,
+   fill = brewer.pal(5,"Set2"))
+
+```
+
+<b>Conclusion: </b>It is evident from the above that Small Families have a larger share of the Coffee sales. Households with <b>3 members or less</b> account for <b>75%</b> share of all coffee packets sold.
+
+
+###Price Conciousness
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Price_Conscious), col = brewer.pal(4,"Greys"),main='Price Conscious', axes=FALSE, ylim=c(0,85000))
+text(x = xx, y = table(coffee$Price_Conscious), label = table(coffee$Price_Conscious), pos = 3, cex = 0.6, col = "black")
+
+piepercent<- paste0(round(100*table(coffee$Price_Conscious)/sum(table(coffee$Price_Conscious))),'%')
+
+pie(table(coffee$Price_Conscious), labels = piepercent, main = "%age distribution",col = brewer.pal(4,"Greys"))
+legend("bottomleft", c('1 : not at all','2 : a little','3 : price-conscious','4 : distinctly price-conscious'), cex = 0.5,
+   fill = brewer.pal(4,"Greys"))
+
+```
+
+<b>Conclusion: </b>With more than <b>75%</b> of all consumers either being <u>'not at all price concisous'</u> or <u>'a little price concisous'</u>, the segment offers to be a <b>Marketer's paradise </b> for setting the <b>Product Pricing.</b>
+
+###Education of householder
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Education), col = brewer.pal(3,"Dark2"),main='Education', axes=FALSE, ylim=c(0,80000))
+text(x = xx, y = table(coffee$Education), label = table(coffee$Education), pos = 3, cex = 0.6, col = "black")
+
+piepercent<- paste0(round(100*table(coffee$Education)/sum(table(coffee$Education))),'%')
+
+pie(table(coffee$Education), labels = piepercent, main = "%age distribution",col = brewer.pal(3,"Dark2"))
+legend("bottomleft", c('1 : nine-year elementary school','2 : intermediate high school','3 : high-school / university'), cex = 0.5,
+   fill = brewer.pal(3,"Dark2"))
+
+```
+
+<b>Conclusion: </b>Based on Education we can infer that most coffee is consumed by people with <i><b><u>high-school/university</u></b> education.</i>
+
+
+###Brand loyalty
+
+```{r echo=FALSE}
+
+par(mfrow = c(1,2))
+xx = barplot(table(coffee$Loyalty), col = c('greenyellow','navyblue'),main='Loyalty', axes=FALSE, ylim=c(0,80000))
+text(x = xx, y = table(coffee$Loyalty), label = table(coffee$Loyalty), pos = 3, cex = 0.6, col = "black")
+
+piepercent<- paste0(round(100*table(coffee$Loyalty)/sum(table(coffee$Loyalty))),'%')
+
+pie(table(coffee$Loyalty), labels = piepercent, main = "%age distribution",col = c('greenyellow','navyblue'))
+legend("bottomleft", c('1 : loyal','2 : not loyal'), cex = 0.5,
+   fill = c('greenyellow','navyblue'))
+
+```
+
+<b>Conclusion: </b>Its evident from the above charts that Loyalty is not a big factor when making decisions on coffee. <b><u>43%</u></b> non-loyal customers against <b><u>57%</u></b> loyal customers is too close a call based on Loyalty.</i>
+
+
+
+
+## Solutions to questions asked.
+
+1. Which brands of coffee are more popular? Given a brand, are all variants equally preferred?<br>
+<pre>With 27% market share, <b>Andere Kaffeemarken</b> is the most popular individual brand and leader in the segment.</pre>
+
+```{r echo=FALSE}
+par(mfrow=c(2,2))
+Jacob <- as.data.frame(cbind(table(coffee$Brand)[1], table(coffee$Brand)[2]))
+colnames(Jacob) <- c('Krönung','Others')
+piepercent<- paste0(round(100*table(coffee$Brand)[1:2]/sum(table(coffee$Brand)[1:2])),'%')
+pie(table(coffee$Brand)[-(3:9)], labels = piepercent, main = "Jacobs",col =  colorspace::diverge_hcl(2))
+legend("bottomright", c('1 : Krönung','2 : Others'), cex = 0.6,
+   fill =  colorspace::diverge_hcl(2))
+
+Aldi <- as.data.frame(cbind(table(coffee$Brand)[3], table(coffee$Brand)[4]))
+colnames(Aldi) <- c('Aldi','Others')
+piepercent<- paste0(round(100*table(coffee$Brand)[3:4]/sum(table(coffee$Brand)[3:4])),'%')
+pie(table(coffee$Brand)[(3:4)], labels = piepercent, main = "Aldi",col =  colorspace::diverge_hcl(2,h=c(128,330,c=98,l=c(65,90))))
+legend("bottomright", c('1 : Aldi','2 : Others'), cex = 0.6,
+   fill =  colorspace::diverge_hcl(2,h=c(128,330,c=98,l=c(65,90))))
+
+Eduscho <- as.data.frame(cbind(table(coffee$Brand)[5], table(coffee$Brand)[6]))
+colnames(Eduscho) <- c('Gala','Others')
+piepercent<- paste0(round(100*table(coffee$Brand)[5:6]/sum(table(coffee$Brand)[5:6])),'%')
+pie(table(coffee$Brand)[(5:6)], labels = piepercent, main = "Eduscho",col =  colorspace::diverge_hcl(2,h=c(255,330,l=c(40,90))))
+legend("bottomright", c('1 : Gala','2 : Others'), cex = 0.6,
+   fill = colorspace::diverge_hcl(2,h=c(255,330,l=c(40,90))))
+
+Tchibo <- as.data.frame(cbind(table(coffee$Brand)[7], table(coffee$Brand)[8]))
+colnames(Tchibo) <- c('Feine Milde','Others')
+piepercent<- paste0(round(100*table(coffee$Brand)[7:8]/sum(table(coffee$Brand)[7:8])),'%')
+pie(table(coffee$Brand)[(7:8)], labels = piepercent, main = "Tchibo",col =  colorspace::rainbow_hcl(2))
+legend("bottomright", c('1 : Feine Milde','2 : Others'), cex = 0.6,
+   fill = colorspace::rainbow_hcl(2))
+
+Andere <- as.data.frame(table(coffee$Brand)[9])
+colnames(Andere) <- c('Keffeemarken')
+Brand <- cbind(Jacob,Aldi,Eduscho,Tchibo,Andere)
+
+```
+
+<pre>Within all four brands, having more than one type of product on the shelves, having varing degree of sales distribution amongst the different types, it <u><b>can not be concluded</b></u> that "Given a brand, all variants are equally preferred."</pre>
+
+2. What are the prices of different brands of coffee?
+```{r echo=FALSE}
+
+ggplot(coffee, aes(Price_per_Packet, ..count..)) + geom_bar(aes(fill = Brand, by = ï..No_of_Packet), position = "dodge") + scale_fill_discrete(name="Brand",
+                         labels=c('1 : Jacobs Krönung','2 : Jacobs other','3 : Aldi','4 : Aldi other','5 : Eduscho Gala','6 : Eduscho other','7 : Tchibo Feine Milde','8 : Tchibo other','9 : Andere Kaffeemarken')) + labs(x='Price per Packet by No of Packets Sold') + scale_x_discrete(labels=c("less than 6,50 DM","6,50 DM to 8,50 DM","6,50 DM to 8,50 DM"))+ theme(axis.text.x = element_text(face="bold", color="#993333", size=5))
+
+
+#ggplot(coffee, aes(ï..No_of_Packet, ..count..)) + geom_bar(aes(fill = Brand), position = "dodge") + scale_fill_discrete(name="Brand",
+#                         labels=c('1 : Jacobs Krönung','2 : Jacobs other','3 : Aldi','4 : Aldi other','5 : Eduscho Gala','6 : Eduscho other','7 : Tchibo Feine #Milde','8 : Tchibo other','9 : Andere Kaffeemarken')) + scale_x_discrete(labels=c("1 Packet","2 Packets","3 or More Packets")) + theme(axis.text.x = #element_text(face="bold", color="#993333", size=10))
+
+```
+<pre>As Evident from the plot above, there is an even presenece of all brands across all price segments and packaging.</pre>
+
+3. How frequently does a household buy coffee? How many packets of coffee are bought at a time?
+
+<pre>As evident from the Price_per_Packet and No_of_Packets graphs above, a houshold usually makes another purchase by the <b><u>9th day</u></b> of the previous purchase. The average mean days after which a household buys coffee is after <b><u>15 days</u></b> Also, <b><u>80%</u></b> of the times, households prefer buying a <b><u>single packet</u></b> of coffee</pre>
+
+4. What are the factors that have an impact on a household's coffee purchase pattern? Does brand preference depend on household size? Does purchase depend on a person's income or education level?
+
+<pre>From the diagrams above its possible to commit that <b><u><i>With increasing size of household, average purchase days reduces. Household's with 2 members, and middle class people tend to purchase more coffee</i></u></b></pre>
+
